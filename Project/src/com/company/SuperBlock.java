@@ -8,7 +8,8 @@ public class SuperBlock {
     public ArrayList<Integer> freeInode = new ArrayList<Integer>(100);
     public ArrayList<Integer> busyInode = new ArrayList<Integer>(100);
     public int usedSpace,freeSpace;
-    String pathname = "E:\\fileInfo\\info.txt";
+//    String pathname = "E:\\fileInfo\\info.txt";
+    String pathname = "fileinfo/info.txt";
     //[storage,freeInode,busyInode,usedSpace,freeSpace]
     ArrayList<String> superBlock = new ArrayList<>(100);
     //读取上一次的数据，这里默认每次关闭文件都会刷新记录在文本里的数值
@@ -44,7 +45,7 @@ public class SuperBlock {
     }
     //更新文本文件里的数据
     public void flush(){
-        String pathname = "E:\\fileInfo\\info1.txt";
+        String pathname = "fileinfo/info1.txt";
         File f = new File(pathname);
         FileTools tool = new FileTools();
         try{

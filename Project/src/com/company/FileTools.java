@@ -77,28 +77,24 @@ public class FileTools {
         // 把临时文件改名为原文件名
         outFile.renameTo(inFile);
     }
-//    public void insertNewWord(long skip, String str, String fileName) {
-//        try {
-//            RandomAccessFile randomAccessFile = new RandomAccessFile(fileName, "rw");
-//            if (skip < 0 || skip > randomAccessFile.length()) {
-//                return;
-//            }
-//            byte[] b = str.getBytes();
-//            System.out.println(b.length);
-//            System.out.println(randomAccessFile.length());
-//            randomAccessFile.setLength(randomAccessFile.length() + b.length);
-//            //把后面的内容往后面挪
-//            for (long i = randomAccessFile.length() - 1; i > b.length + skip - 1; i--) {
-//                randomAccessFile.seek(i - b.length);
-//                byte temp = randomAccessFile.readByte();
-//                randomAccessFile.seek(i);
-//                randomAccessFile.writeByte(temp);
-//            }
-//            randomAccessFile.seek(skip);
-//            randomAccessFile.write(b);
-//            randomAccessFile.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    //获得当前用户名在inode目录的行数
+    public int getInodeLine(String userName){
+        String pathname = "fileinfo/inode.txt";
+        try(FileReader reader = new FileReader(pathname);
+            BufferedReader br = new BufferedReader(reader)){
+            String line;
+            int lineNo = 1;
+            while((line = br.readLine())!=null){
+                String []splited = line.split(" ");
+                if(splited[2].equals(userName)){
+                    return lineNo;
+                }
+                lineNo++;
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return -1;
+    }
 }
