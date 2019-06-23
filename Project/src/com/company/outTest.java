@@ -17,8 +17,12 @@ public class outTest {
 //        System.out.print("asdasd");
 //        System.out.print("\r");
 //        System.out.print("sadasd");
-        Scanner sc = new Scanner(System.in);
-        String ss = sc.nextLine();
-        System.out.println(ss);
+//        Scanner sc = new Scanner(System.in);
+//        String ss = sc.nextLine();
+//        System.out.println(ss);
+        Block bl = new Block();
+        bl.getByPointer(0);
+        System.out.println(bl.content);
+        System.out.println(bl.findFreePointer());
     }
 }

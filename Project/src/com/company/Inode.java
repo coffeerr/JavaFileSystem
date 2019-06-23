@@ -121,7 +121,7 @@ public class Inode {
 
     }
     //用来创建文件使用
-    public void flush(String createFlag){
+    public void flush(String createFlag,int blockPointer){
         pathname = "fileinfo/inode.txt";
         int lineNo = tools.getInodeLine(createFlag);
         String thisline = "";
@@ -129,7 +129,7 @@ public class Inode {
                 String.valueOf(power) + " " + String.valueOf(isOpen) + " " +
                 String.valueOf(fileType) + " " + String.valueOf(fileID) + " " +
                 String.valueOf(fatherInodeID) + " " + String.valueOf(inodeID) + " " +
-                String.valueOf(blockPointer);
+                blockPointer;
         File f = new File(pathname);
         try{
             tools.insertStringInFile(f,lineNo,thisline);

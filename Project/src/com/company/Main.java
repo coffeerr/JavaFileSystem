@@ -67,8 +67,8 @@ public class Main {
                     }
                     String nowDirectory = userInode.nowDirectory+"/"+fileName;
                     //获得当前目录，以当前目录inode为父节点，在inode文件里寻找一个空闲节点，更新磁盘情况info
-                    Inode newInode = new Inode(nowDirectory,0,userInode.userName,power,0,1,0,userInode.inodeID, userInode.inodeID+10,userInode.blockPointer+10);
-                    newInode.flush("0");
+                    Inode newInode = new Inode(nowDirectory,0,userInode.userName,power,0,1,0,userInode.inodeID, tool.findFreeInodeID(),userInode.blockPointer+10);
+                    newInode.flush("0",tool.findFreePointer());
                     InodeFile inodeFile = new InodeFile(newInode.inodeID,fileName);
                     inodeFile.flush();
                     //初始化inode

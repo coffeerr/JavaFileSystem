@@ -184,5 +184,45 @@ public class tools {
         //System.out.println(splited);
         return splited[splited.length-1];
     }
+    //在block文件里寻找空闲block
+    public int findFreePointer() {
+        String pathname = "fileinfo/block.txt";
+        int pointer = 0;
+        try (FileReader reader = new FileReader(pathname);
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] splited = line.split(" ");
+                if (splited[1].equals("0")) {
+                    pointer = Integer.parseInt(splited[0]);
+                    return pointer;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+    //在inode文件里寻找空闲inode
+    public int findFreeInodeID(){
+        int freeID = 0;
+        String pathname = "fileinfo/inode.txt";
+        int pointer = 0;
+        try (FileReader reader = new FileReader(pathname);
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] splited = line.split(" ");
+                if (splited[0].equals("0")) {
+                    freeID = Integer.parseInt(splited[8]);
+                    return freeID;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+
+    }
 }
 
