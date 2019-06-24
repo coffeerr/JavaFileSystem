@@ -14,15 +14,8 @@ public class outTest {
         return splited[splited.length-1];
     }
     public static void main(String[] args) {
-//        System.out.print("asdasd");
-//        System.out.print("\r");
-//        System.out.print("sadasd");
-//        Scanner sc = new Scanner(System.in);
-//        String ss = sc.nextLine();
-//        System.out.println(ss);
-        Block bl = new Block();
-        bl.getByPointer(0);
-        System.out.println(bl.content);
-        System.out.println(bl.findFreePointer());
+       Inode inode = new Inode();
+       inode.setBlockPointer(618);
+       System.out.println(new tools().getBlockByInode(inode));
     }
 }

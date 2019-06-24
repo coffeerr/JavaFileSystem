@@ -41,7 +41,8 @@ public class Main {
         while(true){
             Scanner sc2 = new Scanner(System.in);
             String ss2;
-            System.out.print(tool.getCommandFront(userInode));
+            String commandFront = "[root@OS " + tool.lastDirectory(userInode.nowDirectory) + "]#";
+            System.out.print(commandFront);
             ss2 = sc2.nextLine();
             String[] cmd2 = ss2.trim().split(" ");
             switch (cmd2[0]){
@@ -71,7 +72,105 @@ public class Main {
                     newInode.flush("0",tool.findFreePointer());
                     InodeFile inodeFile = new InodeFile(newInode.inodeID,fileName);
                     inodeFile.flush();
+                    break;
                     //初始化inode
+                }
+                case "Delete" :{
+                    //获得文件名
+                    String fileName = cmd2[1];
+                    //在inode-file里找到对应的inode
+                    int inodeID = tool.getInodeIDByFileName(fileName);
+                    Inode deleteInode = tool.getInodeByInodeID(inodeID);
+                    //判断是不是该inode在不在目录里
+                    if(tool.isSubDirectory(deleteInode,tool.lastDirectory(userInode.nowDirectory))){
+                        tool.deleteInode(deleteInode);
+                    }else{
+                        System.out.println("Delete [fileName]");
+                    }
+                    break;
+                }
+                case "Open":{
+                    String fileName = cmd2[1];
+                    //在inode-file里找到对应的inode
+                    int inodeID = tool.getInodeIDByFileName(fileName);
+                    Inode openInode = tool.getInodeByInodeID(inodeID);
+                    if(tool.isSubDirectory(openInode,tool.lastDirectory(userInode.nowDirectory))&&openInode.fileType==2){
+                        System.out.println(tool.getBlockByInode(openInode));
+                    }else{
+                        System.out.println("指令格式输入错误");
+                    }
+                    break;
+                }
+                case "Close":{
+                    break;
+                }
+                case "Read":{
+                    String fileName = cmd2[1];
+                    //在inode-file里找到对应的inode
+                    int inodeID = tool.getInodeIDByFileName(fileName);
+                    Inode openInode = tool.getInodeByInodeID(inodeID);
+                    if(tool.isSubDirectory(openInode,tool.lastDirectory(userInode.nowDirectory))&&openInode.fileType==2){
+                        System.out.println(tool.getBlockByInode(openInode));
+                    }else{
+                        System.out.println("指令格式输入错误");
+                    }
+                    break;
+                }
+                case "Write":{
+                    String fileName = cmd2[1];
+                    //在inode-file里找到对应的inode
+                    int inodeID = tool.getInodeIDByFileName(fileName);
+                    Inode openInode = tool.getInodeByInodeID(inodeID);
+                    if(tool.isSubDirectory(openInode,tool.lastDirectory(userInode.nowDirectory))&&openInode.fileType==2){
+                        System.out.println(tool.getBlockByInode(openInode));
+                        if(openInode.power == 2){
+                            System.out.println("请输入内容！");
+                            Scanner sc = new Scanner(System.in);
+                            String text = sc.nextLine();
+                            int lineNo = tool.getBlockLineNo(openInode);
+                            tool.writeBlockLine(lineNo,openInode,text);
+                        }else{
+                            System.out.println("您没有读取该文件的权限！");
+                        }
+                    }else{
+                        System.out.println("指令格式输入错误");
+                    }
+                    break;
+                }
+                case "Copy":{
+                    //copy /home/new2 /home
+                    //前者是定位那个inode，后者是定位父inode
+                    String dir1 = cmd2[1];
+                    String dir2 = cmd2[2];
+                    Inode inode1 = tool.getInodeByDirectory(dir1);
+                    Inode inode2 = tool.getInodeByDirectory(dir2);
+                    //####FLAG-2019-6-24
+                    //把inode1复制到inode2里去
+                    break;
+                }
+                case "cd":{
+                    String fileName = cmd2[1];
+                    if(fileName.equals("..")){
+                        //判断userInode是有非根目录父节点
+                        if(tool.isHavingFatherInode(userInode)){
+                            userInode = tool.getInodeByInodeID(userInode.fatherInodeID);
+                        }else{
+                            System.out.println("当前目录已经是根节点！");
+                        }
+                    }
+                    else{
+                        int inodeID = tool.getInodeIDByFileName(fileName);
+                        if(inodeID==-1){
+                            System.out.println("文件名输入错误");
+                            break;
+                        }
+                        userInode = tool.getInodeByInodeID(inodeID);
+                        }
+                        //有则根据父节点，将userInode换成父节点
+                    break;
+                }
+                default:{
+                    System.out.println("指令格式输入错误，输入Help查看帮助！");
                 }
 
             }

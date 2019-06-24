@@ -1,6 +1,7 @@
 package com.company;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,15 +91,22 @@ public class tools {
     }
     //返回当前目录下所有文件的文件名，物理地址，保护码和文件长度。
     public void getDir(Inode inode){
-        int fatherID = inode.fatherInodeID;
-        ArrayList<Inode> list = dirInodeList(fatherID);
+        int inodeID = inode.inodeID;
+        ArrayList<Inode> list = dirInodeList(inodeID);
 //      ArrayList<String> fileName = dirFileName(list);
         System.out.println("文件名\t\t\t物理地址\t\t保护码\t\t文件长度");
 //        for (String i:fileName){
 //            System.out.println(i);
 //        }
         for(Inode i:list){
-            System.out.println(getFileNameByInode(i)+"\t\t"+i.blockPointer+"\t\t\t"+i.power+"\t\t\t"+i.fileStore+"B");
+            String fileName =getFileNameByInode(i);
+            if(fileName.length()<4){
+                fileName += "\t";
+            }
+            if(fileName.length()<8){
+                fileName += "\t";
+            }
+            System.out.println(fileName+"\t\t"+i.blockPointer+"\t\t\t"+i.power+"\t\t\t"+i.fileStore+"B");
         }
     }
     public String getCommandFront(Inode inode){
@@ -108,16 +116,69 @@ public class tools {
     //根据inodeID返回文件名
     public String getFileNameByInode(Inode inode){
         int inodeID = inode.inodeID;
-        String pathName = "E:\\fileInfo\\inodeFile.txt";
+        String pathName = "fileinfo/inodeFile.txt";
         try(FileReader reader = new FileReader(pathName);
             BufferedReader br = new BufferedReader(reader)){
             String line;
             while((line = br.readLine())!=null){
                 String []splited = line.split(" ");
+                if(line == ""){
+                    continue;
+                }
                 if(splited[0].equals(String.valueOf(inodeID))){
                     return splited[1];
                 }
             }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return "";
+    }
+    //通过文件名找到inodeID
+    public int getInodeIDByFileName(String fileName){
+        String pathName = "fileinfo/inodeFile.txt";
+        try(FileReader reader = new FileReader(pathName);
+            BufferedReader br = new BufferedReader(reader)){
+            String line;
+            while((line = br.readLine())!=null){
+                String []splited = line.split(" ");
+                if(splited[0].equals("")){
+                    continue;
+                }
+                if(splited[1].equals(fileName)){
+                    return Integer.parseInt(splited[0]);
+                }
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return -1;
+    }
+    //通过inodeID找到inode
+    public Inode getInodeByInodeID(int inodeID){
+        String pathName = "fileinfo/inode.txt";
+        Inode inode = new Inode();
+        try(FileReader reader = new FileReader(pathName);
+            BufferedReader br = new BufferedReader(reader)){
+            String line;
+            while((line = br.readLine())!=null){
+                String []splited = line.split(" ");
+                if(Integer.parseInt(splited[8])==inodeID){
+                    inode.setNowDirectory(splited[0]);
+                    inode.setFileStore(Integer.parseInt(splited[1]));
+                    inode.setUserName(splited[2]);
+                    inode.setPower(Integer.parseInt(splited[3]));
+                    inode.setIsOpen(Integer.parseInt(splited[4]));
+                    inode.setFileType(Integer.parseInt(splited[5]));
+                    inode.setFileID(Integer.parseInt(splited[6]));
+                    inode.setFatherInodeID(Integer.parseInt(splited[7]));
+                    inode.setInodeID(Integer.parseInt(splited[8]));
+                    inode.setBlockPointer(Integer.parseInt(splited[9]));
+                }
+            }
+            return inode;
 
         }catch (IOException e){
             e.printStackTrace();
@@ -128,7 +189,7 @@ public class tools {
     public ArrayList<Inode> dirInodeList(int fatherInodeID){
         ArrayList<Inode> inodeList = new ArrayList<>(1000);
 //        Inode inode = new Inode();
-        String pathName = "E:\\fileInfo\\inode.txt";
+        String pathName = "fileinfo/inode.txt";
         try(FileReader reader = new FileReader(pathName);
             BufferedReader br = new BufferedReader(reader)){
             String line;
@@ -223,6 +284,173 @@ public class tools {
         }
         return -1;
 
+    }
+    //判断indeo是否在当前节点里
+    public boolean isSubDirectory(Inode inode,String frontDirectory){
+        String wholeDirectory = inode.nowDirectory;
+        String []splited = wholeDirectory.trim().split("/");
+        if(splited[splited.length-2].equals(frontDirectory)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    //打开文件,获得文件的文本内容
+    public String openFile(Inode inode){
+        String text = new tools().getBlockByInode(inode);
+        return text;
+    }
+    //通过inodeID获得文件pointer地址
+    public String getBlockByInode(Inode inode){
+        String pathname = "fileinfo/block.txt";
+        int pointer = 0;
+        try (FileReader reader = new FileReader(pathname);
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            String block = "";
+            while ((line = br.readLine()) != null) {
+                String[] splited = line.split(" ");
+                if (splited[0].equals(String.valueOf(inode.blockPointer))) {
+                    for(int i = 2;i<splited.length;i++){
+                        block = block + splited[i] + " ";
+                    }
+                    return block;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "no text";
+    }
+    public void deleteInode(Inode inode){
+        //将节点复位
+        String pathname = "fileinfo/inode.txt";
+        int pointer = 0;
+        int lineNo = 1;
+        try (FileReader reader = new FileReader(pathname);
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] splited = line.split(" ");
+                if (splited[splited.length-2].equals(String.valueOf(inode.inodeID))) {
+                    break;
+                }
+                lineNo++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try{
+            String ss = "0 0 0 0 0 0 0 0 " + inode.inodeID + " 0";
+            File f = new File(pathname);
+            new FileTools().insertStringInFile(f,lineNo,ss);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+    public int getBlockLineNo(Inode inode){
+        String pathname = "fileinfo/block.txt";
+        int lineNo = 1;
+        try (FileReader reader = new FileReader(pathname);
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            String block = "";
+            while ((line = br.readLine()) != null) {
+                String[] splited = line.split(" ");
+                if (splited[0].equals(String.valueOf(inode.blockPointer))) {
+                    return lineNo;
+                }
+                lineNo++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+    //获得那一行的Block
+//    public String getBlockLine(Inode inode){
+//        String pathname = "fileinfo/block.txt";
+//        int pointer = 0;
+//        try (FileReader reader = new FileReader(pathname);
+//             BufferedReader br = new BufferedReader(reader)) {
+//            String line;
+//            String block = "";
+//            while ((line = br.readLine()) != null) {
+//                String[] splited = line.split(" ");
+//                if (splited[0].equals(String.valueOf(inode.blockPointer))) {
+//                    for(int i = 0;i<splited.length;i++){
+//                        block = block + splited[i] + " ";
+//                    }
+//                    return block;
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return "0 0 0";
+//    }
+    public void writeBlockLine(int lineNO,Inode inode,String newLine){
+        String pathname = "fileinfo/block.txt";
+        int pointer = 0;
+        String block = "";
+        try (FileReader reader = new FileReader(pathname);
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] splited = line.split(" ");
+                if (splited[0].equals(String.valueOf(inode.blockPointer))) {
+                    for(int i = 0;i<2;i++){
+                        block = block + splited[i] + " ";
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try{
+        File f = new File(pathname);
+        new FileTools().insertStringInFile(f,lineNO,block+newLine);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+    //判断inode的父节点是否是根节点
+    public boolean isHavingFatherInode(Inode inode){
+        if(inode.fatherInodeID == 0){
+            return false;
+        }else{
+            return true;
+        }
+    }
+    public Inode getInodeByDirectory(String Directory){
+        String pathName = "fileinfo/inode.txt";
+        Inode inode = new Inode();
+        try(FileReader reader = new FileReader(pathName);
+            BufferedReader br = new BufferedReader(reader)){
+            String line;
+            while((line = br.readLine())!=null){
+                String []splited = line.split(" ");
+                if(splited[0].equals(Directory)){
+                    inode.setNowDirectory(splited[0]);
+                    inode.setFileStore(Integer.parseInt(splited[1]));
+                    inode.setUserName(splited[2]);
+                    inode.setPower(Integer.parseInt(splited[3]));
+                    inode.setIsOpen(Integer.parseInt(splited[4]));
+                    inode.setFileType(Integer.parseInt(splited[5]));
+                    inode.setFileID(Integer.parseInt(splited[6]));
+                    inode.setFatherInodeID(Integer.parseInt(splited[7]));
+                    inode.setInodeID(Integer.parseInt(splited[8]));
+                    inode.setBlockPointer(Integer.parseInt(splited[9]));
+                }
+            }
+            return inode;
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

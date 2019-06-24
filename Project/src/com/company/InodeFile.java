@@ -26,6 +26,7 @@ public class InodeFile {
         thisline = "\n"+ inodeID  + " " + fileName;
         try(FileWriter writer = new FileWriter(pathName,true);
             BufferedWriter wr = new BufferedWriter(writer)){
+                wr.newLine();
                 wr.write(thisline);
 
         }catch (IOException e){
