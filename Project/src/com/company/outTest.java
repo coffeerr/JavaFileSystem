@@ -14,8 +14,8 @@ public class outTest {
         return splited[splited.length-1];
     }
     public static void main(String[] args) {
-       Inode inode = new Inode();
-       inode.setBlockPointer(618);
-       System.out.println(new tools().getBlockByInode(inode));
+        tools tool = new tools();
+        Inode inode = tool.getInodeByInodeID(21);
+        tool.updateInodeStore(inode);
     }
 }

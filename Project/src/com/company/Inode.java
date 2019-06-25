@@ -137,6 +137,21 @@ public class Inode {
             e.printStackTrace();
         }
     }
+    public void commonFlush(int lineNo){
+        pathname = "fileinfo/inode.txt";
+        String thisline = "";
+        thisline = nowDirectory +" " + String.valueOf(fileStore) + " " + userName + " " +
+                String.valueOf(power) + " " + String.valueOf(isOpen) + " " +
+                String.valueOf(fileType) + " " + String.valueOf(fileID) + " " +
+                String.valueOf(fatherInodeID) + " " + String.valueOf(inodeID) + " " +
+                blockPointer;
+        File f = new File(pathname);
+        try{
+            tools.insertStringInFile(f,lineNo,thisline);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     public Inode(String userNameReal){
         init(userNameReal);
     }
@@ -191,6 +206,11 @@ public class Inode {
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+    public int countFileSpace(Inode inode){
+        int space = new tools().getBlockByInode(inode).getBytes().length;
+        space = space / 1024 + 1;
+        return space;
     }
 
 }

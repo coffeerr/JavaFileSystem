@@ -129,6 +129,10 @@ public class Main {
                             String text = sc.nextLine();
                             int lineNo = tool.getBlockLineNo(openInode);
                             tool.writeBlockLine(lineNo,openInode,text);
+                            openInode.fileStore = tool.countFileStore(openInode);
+                            //将文件大小写入inode文件
+                            tool.updateInodeStore(openInode);
+//                            openInode.f
                         }else{
                             System.out.println("您没有读取该文件的权限！");
                         }
@@ -138,13 +142,38 @@ public class Main {
                     break;
                 }
                 case "Copy":{
+                    //copy [目录1] [目录2]：将目录1的文件，复制在目录2下面
                     //copy /home/new2 /home
                     //前者是定位那个inode，后者是定位父inode
+                    //copy首先，copy的是block，其他都不相同，也就是说，申请一个新的inode，block需要复制一下，block的pointer也不相同
                     String dir1 = cmd2[1];
                     String dir2 = cmd2[2];
                     Inode inode1 = tool.getInodeByDirectory(dir1);
                     Inode inode2 = tool.getInodeByDirectory(dir2);
-                    //####FLAG-2019-6-24
+                    if(inode2.fileType==2){
+                        System.out.println("请选择文件夹！");
+                        break;
+                    }
+                    //申请一个inode
+                    Inode copyInode = new Inode();
+                    copyInode.setNowDirectory(inode2.nowDirectory+"/"+tool.getFileNameByInode(inode1)+"_copy");
+                    copyInode.setFileStore(inode1.fileStore);
+                    copyInode.setUserName(inode1.userName);
+                    copyInode.setPower(inode1.power);
+                    copyInode.setIsOpen(inode1.isOpen);
+                    copyInode.setFileType(inode1.fileType);
+                    copyInode.setFileID(inode1.fileID);
+                    copyInode.setFatherInodeID(inode2.inodeID);
+                    copyInode.setInodeID(tool.findFreeInodeID());
+                    copyInode.setBlockPointer(tool.findFreePointer());
+                    //写入inode
+                    copyInode.flush("0",copyInode.blockPointer);
+                    InodeFile inodeFile = new InodeFile(copyInode.inodeID,tool.getFileNameByInode(inode1)+"_copy");
+                    inodeFile.flush();
+                    //复制block
+                    String text = tool.getBlockByInode(inode1);
+                    int lineNo = tool.getBlockLineNo(copyInode);
+                    tool.writeBlockLine(lineNo,copyInode,text);
                     //把inode1复制到inode2里去
                     break;
                 }

@@ -452,5 +452,34 @@ public class tools {
         }
         return null;
     }
+    //统计文件大小
+    public int countFileStore(Inode inode){
+        //首先判断inode是目录还是文件
+            int space = new tools().getBlockByInode(inode).getBytes().length;
+            space = space /1024 +1;
+            return space;
+    }
+    public void updateInodeStore(Inode inode){
+        String pathname = "fileinfo/inode.txt";
+        int lineNo = 1;
+        try(FileReader reader = new FileReader(pathname);
+            BufferedReader br = new BufferedReader(reader)){
+            String line;
+            lineNo = 1;
+            while((line = br.readLine())!=null){
+                String []splited = line.split(" ");
+                if(splited[8].equals(String.valueOf(inode.inodeID))){
+                    break;
+                }
+                lineNo++;
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        inode.fileStore = new tools().countFileStore(inode);
+        inode.commonFlush(lineNo);
+    }
+    //文件的话直接读取block判断字符
 }
 
